@@ -20,3 +20,9 @@
 # repo-specific
 7zdecom
 *.7z
+
+# virtualenv
+/bin
+/include
+/lib
+/local
