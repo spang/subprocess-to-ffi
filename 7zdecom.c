@@ -88,9 +88,6 @@ int main(int argc, char *argv[]) {
 		return 1;
 	}
 
-	int r;
-	size_t size;
-
 	printf("extracting %s\n", argv[1]);
 	return extract(argv[1]);
 }
