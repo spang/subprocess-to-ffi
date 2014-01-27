@@ -26,3 +26,6 @@
 /include
 /lib
 /local
+
+# cffi
+/__pycache__
