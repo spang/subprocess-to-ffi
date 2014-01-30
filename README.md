@@ -25,3 +25,4 @@ about this stuff online.
 * http://stackoverflow.com/questions/1216794/python-subprocess-popen-erroring-with-oserror-errno-12-cannot-allocate-memory
 * http://opsmonkey.blogspot.com/2007/01/linux-memory-overcommit.html
 * https://www.kernel.org/doc/
+* http://www.quora.com/What-are-the-disadvantages-of-disabling-memory-overcommit-in-Linux

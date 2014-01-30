@@ -7,6 +7,15 @@ import argparse
 
 from cffi import FFI
 
+# hardcode these for simplicity
+ARCHIVE_OK = 0
+ARCHIVE_EOF = 1
+ARCHIVE_WARN = -20
+ARCHIVE_EXTRACT_TIME = 0x0004
+ARCHIVE_EXTRACT_PERM = 0x0002
+ARCHIVE_EXTRACT_ACL = 0x0020
+ARCHIVE_EXTRACT_FFLAGS = 0x0040
+
 def setup_cffi_libarchive():
     ffi = FFI()
 
@@ -17,25 +26,6 @@ def setup_cffi_libarchive():
     # describe the data type and function prototypes to cffi. god this was
     # tedious.
     ffi.cdef("""
-#define       ARCHIVE_OK        0
-#define       ARCHIVE_EOF       1
-#define       ARCHIVE_WARN      (-20)
-#define       ARCHIVE_EXTRACT_OWNER                   (0x0001)
-#define       ARCHIVE_EXTRACT_PERM                    (0x0002)
-#define       ARCHIVE_EXTRACT_TIME                    (0x0004)
-#define       ARCHIVE_EXTRACT_NO_OVERWRITE            (0x0008)
-#define       ARCHIVE_EXTRACT_UNLINK                  (0x0010)
-#define       ARCHIVE_EXTRACT_ACL                     (0x0020)
-#define       ARCHIVE_EXTRACT_FFLAGS                  (0x0040)
-#define       ARCHIVE_EXTRACT_XATTR                   (0x0080)
-#define       ARCHIVE_EXTRACT_SECURE_SYMLINKS         (0x0100)
-#define       ARCHIVE_EXTRACT_SECURE_NODOTDOT         (0x0200)
-#define       ARCHIVE_EXTRACT_NO_AUTODIR              (0x0400)
-#define       ARCHIVE_EXTRACT_NO_OVERWRITE_NEWER      (0x0800)
-#define       ARCHIVE_EXTRACT_SPARSE                  (0x1000)
-#define       ARCHIVE_EXTRACT_MAC_METADATA            (0x2000)
-#define       ARCHIVE_EXTRACT_NO_HFS_COMPRESSION      (0x4000)
-#define       ARCHIVE_EXTRACT_HFS_COMPRESSION_FORCED  (0x8000)
 typedef unsigned long int dev_t;
 typedef long int off_t;
 typedef unsigned int mode_t;
@@ -167,7 +157,7 @@ struct archive_entry {
     int archive_read_support_format_7zip(struct archive *);
     int archive_read_support_filter_lzma(struct archive *);
     struct archive * archive_write_disk_new(void);
-    int archive_write_set_options(struct archive *, int flags);
+    int archive_write_disk_set_options(struct archive *, int flags);
     int archive_write_disk_set_standard_lookup(struct archive *);
     int archive_read_open_filename(struct archive *, const char *filename, size_t block_size);
     int archive_read_next_header(struct archive *, struct archive_entry **);
@@ -191,13 +181,13 @@ def copy_data(ffi, lib, read_archive, write_archive):
     while True:
         r = lib.archive_read_data_block(read_archive, ffi.addressof(buf),
                 ffi.addressof(size), ffi.addressof(offset))
-        if r == lib.ARCHIVE_EOF:
+        if r == ARCHIVE_EOF:
             return
-        if r != lib.ARCHIVE_OK:
+        if r != ARCHIVE_OK:
             raise RuntimeError(lib.archive_error_string(read_archive))
 
         r = lib.archive_write_data_block(write_archive, buf, size, offset)
-        if r != lib.ARCHIVE_OK:
+        if r != ARCHIVE_OK:
             raise RuntimeError(lib.archive_error_string(write_archive))
 
 def extract(ffi, lib, archive_filename):
@@ -205,8 +195,8 @@ def extract(ffi, lib, archive_filename):
     ext = ffi.new('struct archive *')
     entry = ffi.new('struct archive_entry *')
 
-    flags = lib.ARCHIVE_EXTRACT_TIME | lib.ARCHIVE_EXTRACT_PERM | \
-            lib.ARCHIVE_EXTRACT_ACL | lib.ARCHIVE_EXTRACT_FFLAGS
+    flags = ARCHIVE_EXTRACT_TIME | ARCHIVE_EXTRACT_PERM | \
+            ARCHIVE_EXTRACT_ACL | ARCHIVE_EXTRACT_FFLAGS
 
     a = lib.archive_read_new()
     lib.archive_read_support_format_7zip(a)
@@ -218,26 +208,27 @@ def extract(ffi, lib, archive_filename):
     if r != 0:
         raise RuntimeError
     while True:
+        print entry
         r = lib.archive_read_next_header(a, ffi.addressof(entry))
-        if r == lib.ARCHIVE_EOF:
+        if r == ARCHIVE_EOF:
             break
-        if r != lib.ARCHIVE_OK:
+        if r != ARCHIVE_OK:
             print >>sys.stderr, lib.archive_error_string(a)
-        if r < lib.ARCHIVE_WARN:
+        if r < ARCHIVE_WARN:
             raise RuntimeError
         r = lib.archive_write_header(ext, entry);
-        if r != lib.ARCHIVE_OK:
+        if r != ARCHIVE_OK:
             print >>sys.stderr, lib.archive_error_string(ext)
         elif (lib.archive_entry_size(entry) > 0):
             copy_data(a, ext)
-            if r != lib.ARCHIVE_OK:
+            if r != ARCHIVE_OK:
                 print >>sys.stderr, lib.archive_error_string(ext)
-            if r < lib.ARCHIVE_WARN:
+            if r < ARCHIVE_WARN:
                 raise RuntimeError
         r = lib.archive_write_finish_entry(ext);
-        if r != lib.ARCHIVE_OK:
+        if r != ARCHIVE_OK:
             print >>sys.stderr, lib.archive_error_string(ext)
-        if r < lib.ARCHIVE_WARN:
+        if r < ARCHIVE_WARN:
             raise RuntimeError
     lib.archive_read_close(a);
     lib.archive_read_free(a);
