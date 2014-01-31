@@ -26,3 +26,10 @@ about this stuff online.
 * http://opsmonkey.blogspot.com/2007/01/linux-memory-overcommit.html
 * https://www.kernel.org/doc/
 * http://www.quora.com/What-are-the-disadvantages-of-disabling-memory-overcommit-in-Linux
+
+THANKS TO
+=========
+
+Folks that helped me out with this talk, you rock:
+
+Michael Grinich, Kavya Joshi, Erik Osheim
