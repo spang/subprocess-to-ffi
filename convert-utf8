@@ -2,23 +2,17 @@
 
 import sys
 import subprocess
-import chardet
 
 try:
-    filename = sys.argv[1]
+    encoding = sys.argv[1]
+    filename = sys.argv[2]
 except IndexError:
-    print >>sys.stderr, "Usage: ./convert-utf8 <filename>"
+    print >>sys.stderr, "Usage: ./convert-utf8 <encoding> <filename>"
     sys.exit(1)
 
 raw_data = open(filename, 'r').read()
-charset = chardet.detect(raw_data)
 
-if charset['encoding'] is not None:
-    print "Detected charset as {}".format(charset['encoding'])
-    # We have to re-read the data from the file because we can't use a piped
-    # STDIN with check_ functions. (And we'd have to rewind the fh anyway.)
-    # http://docs.python.org/2/library/subprocess.html#using-the-subprocess-module
-    subprocess.check_call(['iconv', '-f', str(charset['encoding']), '-t',
-        'utf-8', filename])
-else:
-    print "Couldn't detect encoding for file {}".format(filename)
+# We have to re-read the data from the file because we can't use a piped
+# STDIN with check_ functions. (And we'd have to rewind the fh anyway.)
+# http://docs.python.org/2/library/subprocess.html#using-the-subprocess-module
+subprocess.check_call(['iconv', '-f', encoding, '-t', 'utf-8', filename])
