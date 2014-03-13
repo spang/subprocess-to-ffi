@@ -10,9 +10,4 @@ except IndexError:
     print >>sys.stderr, "Usage: ./convert-utf8 <encoding> <filename>"
     sys.exit(1)
 
-raw_data = open(filename, 'r').read()
-
-# We have to re-read the data from the file because we can't use a piped
-# STDIN with check_ functions. (And we'd have to rewind the fh anyway.)
-# http://docs.python.org/2/library/subprocess.html#using-the-subprocess-module
 subprocess.check_call(['iconv', '-f', encoding, '-t', 'utf-8', filename])

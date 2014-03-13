@@ -152,6 +152,6 @@ if __name__ == '__main__':
     with Iconv('iso-2022-cn') as iconv:
     # with Iconv('UTF-16LE') as iconv:
         decoded = iconv.decode(text)
-        print "decoded:", type(decoded), decoded
+        print "decoded:", decoded
         encoded = iconv.encode(decoded)
         print "encoded:", encoded
