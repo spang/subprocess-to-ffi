@@ -32,4 +32,4 @@ THANKS TO
 
 Folks that helped me out with this talk, you rock:
 
-Michael Grinich, Kavya Joshi, Erik Osheim
+Michael Grinich, Kavya Joshi, Erik Osheim, Hy Carrell
